@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OP Stack Bridge - Cross-Superchain Bridge Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: linear-gradient(135deg, #ff0420 0%, #ff6b6b 20%, #4ecdc4 60%, #45b7d1 100%);
+            font-family: 'Inter', system-ui, sans-serif;
+            color: #1a1a1a;
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 4, 32, 0.2);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(255, 4, 32, 0.1);
+        }
+        .op-red { color: #ff0420; }
+        .op-gradient {
+            background: linear-gradient(45deg, #ff0420, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chain-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .op-mainnet { background: linear-gradient(45deg, #ff0420, #ff6b6b); }
+        .base-chain { background: linear-gradient(45deg, #0052ff, #4285f4); }
+        .zora-chain { background: linear-gradient(45deg, #000000, #333333); }
+        .mode-chain { background: linear-gradient(45deg, #dffe00, #b8cc00); color: #000; }
+        .bridge-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 4, 32, 0.1);
+            transition: all 0.3s ease;
+        }
+        .bridge-card:hover {
+            border-color: #ff0420;
+            box-shadow: 0 8px 25px rgba(255, 4, 32, 0.15);
+            transform: translateY(-2px);
+        }
+        .bridge-button {
+            background: linear-gradient(45deg, #ff0420, #ff6b6b);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .bridge-button:hover {
+            background: linear-gradient(45deg, #e6031c, #ff5252);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 4, 32, 0.3);
+        }
+        .bridge-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .token-input {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 4, 32, 0.2);
+            color: #1a1a1a;
+        }
+        .token-input:focus {
+            border-color: #ff0420;
+            box-shadow: 0 0 0 3px rgba(255, 4, 32, 0.1);
+        }
+        .status-pending { color: #f59e0b; }
+        .status-completed { color: #10b981; }
+        .status-failed { color: #ef4444; }
+        .wallet-button {
+            background: rgba(255, 4, 32, 0.1);
+            border: 1px solid #ff0420;
+            color: #ff0420;
+            transition: all 0.3s ease;
+        }
+        .wallet-button:hover {
+            background: #ff0420;
+            color: white;
+        }
+        .connected {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #10b981;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <div class="glass-card border-b">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-bridge text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold op-gradient">OP Stack Bridge</h1>
+                        <p class="text-sm text-gray-600">Cross-Superchain Bridge Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
+                        <i class="fas fa-wallet mr-2"></i>
+                        Connect Wallet
+                    </button>
+                    <div class="text-green-600 text-sm font-medium">
+                        <i class="fas fa-circle text-xs mr-1"></i>
+                        All Chains Live
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- Bridge Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold op-red">Bridge Assets</h2>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-shield-alt text-green-500"></i>
+                            <span class="text-sm text-gray-600">Secured by OP Stack</span>
+                        </div>
+                    </div>
+
+                    <!-- From Chain -->
+                    <div class="space-y-6">
+                        <div class="bridge-card rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">From</span>
+                                <span class="text-sm text-gray-500" id="fromBalance">Balance: --</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <select class="token-input rounded-lg px-3 py-2" id="fromChain">
+                                    <option value="optimism">OP Mainnet</option>
+                                    <option value="base">Base</option>
+                                    <option value="zora">Zora</option>
+                                    <option value="mode">Mode</option>
+                                </select>
+                                <select class="token-input rounded-lg px-3 py-2" id="fromToken">
+                                    <option value="ETH">ETH</option>
+                                    <option value="USDC">USDC</option>
+                                    <option value="OP">OP</option>
+                                    <option value="USDT">USDT</option>
+                                </select>
+                                <div class="relative">
+                                    <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="fromAmount">
+                                    <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 text-sm hover:text-red-600 font-medium" id="maxButton">MAX</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500" id="fromUsdValue">≈ $0.00</span>
+                                <div class="chain-badge op-mainnet" id="fromChainBadge">
+                                    <i class="fas fa-circle text-xs"></i>
+                                    OP Mainnet
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Arrow -->
+                        <div class="flex justify-center">
+                            <button class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-full flex items-center justify-center transition-all duration-300" id="swapChains">
+                                <i class="fas fa-arrow-down text-white text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- To Chain -->
+                        <div class="bridge-card rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">To</span>
+                                <span class="text-sm text-gray-500" id="toBalance">Balance: --</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <select class="token-input rounded-lg px-3 py-2" id="toChain">
+                                    <option value="base">Base</option>
+                                    <option value="optimism">OP Mainnet</option>
+                                    <option value="zora">Zora</option>
+                                    <option value="mode">Mode</option>
+                                </select>
+                                <select class="token-input rounded-lg px-3 py-2" id="toToken">
+                                    <option value="ETH">ETH</option>
+                                    <option value="USDC">USDC</option>
+                                    <option value="OP">OP</option>
+                                    <option value="USDT">USDT</option>
+                                </select>
+                                <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="toAmount" readonly>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500" id="toUsdValue">≈ $0.00</span>
+                                <div class="chain-badge base-chain" id="toChainBadge">
+                                    <i class="fas fa-circle text-xs"></i>
+                                    Base
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Details -->
+                        <div class="bridge-card rounded-lg p-4" id="bridgeDetails" style="display: none;">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">Bridge Details</span>
+                                <i class="fas fa-info-circle text-gray-400"></i>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Bridge Fee:</span>
+                                    <span id="bridgeFee">$2.34</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Estimated Time:</span>
+                                    <span id="bridgeTime">~7 minutes</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">You'll receive:</span>
+                                    <span id="receiveAmount" class="font-medium">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Button -->
+                        <button class="bridge-button w-full py-4 rounded-lg font-semibold text-lg" id="bridgeButton" disabled>
+                            Connect Wallet to Bridge
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bridge Analytics -->
+            <div class="space-y-6">
+                <!-- Bridge Statistics -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-chart-bar mr-2"></i>Bridge Analytics
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">24h Volume</span>
+                            <span class="font-semibold">$12.4M</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Total Bridges</span>
+                            <span class="font-semibold">8,456</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Avg. Bridge Time</span>
+                            <span class="font-semibold">6.2 min</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Success Rate</span>
+                            <span class="font-semibold text-green-600">99.8%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chain Status -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-network-wired mr-2"></i>Chain Status
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm">OP Mainnet</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">⛽ 0.2 gwei</div>
+                                <div class="text-xs text-gray-500">Fast</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm">Base</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">⛽ 0.1 gwei</div>
+                                <div class="text-xs text-gray-500">Fast</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span class="text-sm">Zora</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">⛽ 0.05 gwei</div>
+                                <div class="text-xs text-gray-500">Fast</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                <span class="text-sm">Mode</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium">⛽ 0.3 gwei</div>
+                                <div class="text-xs text-gray-500">Medium</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bridges -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-history mr-2"></i>Your Recent Bridges
+                    </h3>
+                    <div class="space-y-3" id="recentBridges">
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fas fa-wallet text-3xl mb-2 opacity-50"></i>
+                            <p class="text-sm">Connect wallet to view history</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bridge Volume Chart -->
+        <div class="glass-card rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-semibold op-red mb-6">
+                <i class="fas fa-chart-line mr-2"></i>Cross-Chain Bridge Volume (24h)
+            </h3>
+            <div class="h-64">
+                <canvas id="volumeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Popular Routes -->
+        <div class="glass-card rounded-xl p-6 mb-8">
+            <h3 class="text-lg font-semibold op-red mb-6">
+                <i class="fas fa-route mr-2"></i>Popular Bridge Routes
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bridge-card rounded-lg p-4 text-center">
+                    <div class="flex justify-center items-center space-x-2 mb-2">
+                        <span class="chain-badge op-mainnet text-xs">OP</span>
+                        <i class="fas fa-arrow-right text-gray-400"></i>
+                        <span class="chain-badge base-chain text-xs">Base</span>
+                    </div>
+                    <div class="text-sm text-gray-600">ETH Bridge</div>
+                    <div class="text-lg font-semibold">$3.2M</div>
+                    <div class="text-xs text-green-600">+12.3%</div>
+                </div>
+                <div class="bridge-card rounded-lg p-4 text-center">
+                    <div class="flex justify-center items-center space-x-2 mb-2">
+                        <span class="chain-badge base-chain text-xs">Base</span>
+                        <i class="fas fa-arrow-right text-gray-400"></i>
+                        <span class="chain-badge op-mainnet text-xs">OP</span>
+                    </div>
+                    <div class="text-sm text-gray-600">USDC Bridge</div>
+                    <div class="text-lg font-semibold">$2.8M</div>
+                    <div class="text-xs text-green-600">+8.7%</div>
+                </div>
+                <div class="bridge-card rounded-lg p-4 text-center">
+                    <div class="flex justify-center items-center space-x-2 mb-2">
+                        <span class="chain-badge zora-chain text-xs">Zora</span>
+                        <i class="fas fa-arrow-right text-gray-400"></i>
+                        <span class="chain-badge base-chain text-xs">Base</span>
+                    </div>
+                    <div class="text-sm text-gray-600">ETH Bridge</div>
+                    <div class="text-lg font-semibold">$1.1M</div>
+                    <div class="text-xs text-red-600">-3.2%</div>
+                </div>
+                <div class="bridge-card rounded-lg p-4 text-center">
+                    <div class="flex justify-center items-center space-x-2 mb-2">
+                        <span class="chain-badge mode-chain text-xs">Mode</span>
+                        <i class="fas fa-arrow-right text-gray-400"></i>
+                        <span class="chain-badge op-mainnet text-xs">OP</span>
+                    </div>
+                    <div class="text-sm text-gray-600">OP Bridge</div>
+                    <div class="text-lg font-semibold">$890K</div>
+                    <div class="text-xs text-green-600">+15.1%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <div class="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500/10 to-red-600/10 rounded-full border border-red-500/20">
+                <i class="fas fa-bridge op-red"></i>
+                <span class="text-sm font-medium op-gradient">Powered by OP Stack Technology</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">Built for Superchain Ecosystem | serayd61</p>
+        </div>
+    </div>
+
+    <script>
+        // Wallet connection state
+        let isWalletConnected = false;
+        let walletAddress = "";
+
+        // Token prices (demo data)
+        const tokenPrices = {
+            'ETH': 2247.85,
+            'USDC': 1.00,
+            'USDT': 0.999,
+            'OP': 2.34
+        };
+
+        // Chain configurations
+        const chainConfigs = {
+            'optimism': { name: 'OP Mainnet', badge: 'op-mainnet', icon: 'fas fa-circle' },
+            'base': { name: 'Base', badge: 'base-chain', icon: 'fas fa-circle' },
+            'zora': { name: 'Zora', badge: 'zora-chain', icon: 'fas fa-circle' },
+            'mode': { name: 'Mode', badge: 'mode-chain', icon: 'fas fa-circle' }
+        };
+
+        // Demo wallet balances
+        const walletBalances = {
+            'optimism': { 'ETH': 2.5678, 'USDC': 1250.50, 'OP': 150.25, 'USDT': 500.00 },
+            'base': { 'ETH': 1.2345, 'USDC': 750.25, 'OP': 0, 'USDT': 300.00 },
+            'zora': { 'ETH': 0.8756, 'USDC': 200.10, 'OP': 0, 'USDT': 0 },
+            'mode': { 'ETH': 0.5432, 'USDC': 100.50, 'OP': 25.75, 'USDT': 150.00 }
+        };
+
+        // Wallet connection
+        document.getElementById('walletButton').addEventListener('click', function() {
+            if (!isWalletConnected) {
+                // Simulate wallet connection
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Connecting...';
+                
+                setTimeout(() => {
+                    isWalletConnected = true;
+                    walletAddress = "0x7FbD935c9972b6A4c0b6F7c6f650996677bF6e0A";
+                    this.innerHTML = `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                    this.className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                    
+                    // Update UI for connected state
+                    updateWalletUI();
+                    document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                    document.getElementById('bridgeButton').disabled = false;
+                }, 1500);
+            } else {
+                // Disconnect wallet
+                isWalletConnected = false;
+                walletAddress = "";
+                this.innerHTML = '<i class="fas fa-wallet mr-2"></i>Connect Wallet';
+                this.className = 'wallet-button px-4 py-2 rounded-lg font-medium';
+                
+                // Reset UI
+                updateWalletUI();
+                document.getElementById('bridgeButton').textContent = 'Connect Wallet to Bridge';
+                document.getElementById('bridgeButton').disabled = true;
+            }
+        });
+
+        // Update wallet UI
+        function updateWalletUI() {
+            const fromChain = document.getElementById('fromChain').value;
+            const toChain = document.getElementById('toChain').value;
+            const fromToken = document.getElementById('fromToken').value;
+            const toToken = document.getElementById('toToken').value;
+
+            if (isWalletConnected) {
+                const fromBalance = walletBalances[fromChain][fromToken] || 0;
+                const toBalance = walletBalances[toChain][toToken] || 0;
+                
+                document.getElementById('fromBalance').textContent = `Balance: ${fromBalance.toFixed(4)} ${fromToken}`;
+                document.getElementById('toBalance').textContent = `Balance: ${toBalance.toFixed(4)} ${toToken}`;
+                
+                // Update recent bridges
+                updateRecentBridges();
+            } else {
+                document.getElementById('fromBalance').textContent = 'Balance: --';
+                document.getElementById('toBalance').textContent = 'Balance: --';
+                
+                // Clear recent bridges
+                document.getElementById('recentBridges').innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-wallet text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">Connect wallet to view history</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Update recent bridges
+        function updateRecentBridges() {
+            const recentBridgesData = [
+                { from: 'OP Mainnet', to: 'Base', token: 'ETH', amount: '0.5', status: 'completed', time: '2 hours ago' },
+                { from: 'Base', to: 'Zora', token: 'USDC', amount: '100', status: 'pending', time: '5 minutes ago' },
+                { from: 'Zora', to: 'OP Mainnet', token: 'ETH', amount: '0.25', status: 'completed', time: '1 day ago' }
+            ];
+
+            const recentBridgesHtml = recentBridgesData.map(bridge => `
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                    <div>
+                        <div class="text-sm font-medium">${bridge.from} → ${bridge.to}</div>
+                        <div class="text-xs text-gray-500">${bridge.amount} ${bridge.token} • ${bridge.time}</div>
+                    </div>
+                    <div class="status-${bridge.status}">
+                        <i class="fas fa-${bridge.status === 'completed' ? 'check-circle' : bridge.status === 'pending' ? 'clock' : 'times-circle'} text-sm"></i>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('recentBridges').innerHTML = recentBridgesHtml;
+        }
+
+        // Update chain badges
+        function updateChainBadges() {
+            const fromChain = document.getElementById('fromChain').value;
+            const toChain = document.getElementById('toChain').value;
+
+            const fromConfig = chainConfigs[fromChain];
+            const toConfig = chainConfigs[toChain];
+
+            document.getElementById('fromChainBadge').className = `chain-badge ${fromConfig.badge}`;
+            document.getElementById('fromChainBadge').innerHTML = `<i class="${fromConfig.icon} text-xs"></i> ${fromConfig.name}`;
+
+            document.getElementById('toChainBadge').className = `chain-badge ${toConfig.badge}`;
+            document.getElementById('toChainBadge').innerHTML = `<i class="${toConfig.icon} text-xs"></i> ${toConfig.name}`;
+        }
+
+        // Calculate bridge amounts
+        function calculateBridge() {
+            const fromAmount = parseFloat(document.getElementById('fromAmount').value) || 0;
+            const fromToken = document.getElementById('fromToken').value;
+            const toToken = document.getElementById('toToken').value;
+
+            if (fromAmount > 0) {
+                const fromPrice = tokenPrices[fromToken];
+                const toPrice = tokenPrices[toToken];
+                const exchangeRate = fromPrice / toPrice;
+                const toAmount = (fromAmount * exchangeRate * 0.9995).toFixed(6); // 0.05% bridge fee
+
+                document.getElementById('toAmount').value = toAmount;
+                document.getElementById('fromUsdValue').textContent = `≈ $${(fromAmount * fromPrice).toLocaleString()}`;
+                document.getElementById('toUsdValue').textContent = `≈ $${(parseFloat(toAmount) * toPrice).toLocaleString()}`;
+
+                // Show bridge details
+                document.getElementById('bridgeDetails').style.display = 'block';
+                document.getElementById('receiveAmount').textContent = `${toAmount} ${toToken}`;
+            } else {
+                document.getElementById('bridgeDetails').style.display = 'none';
+            }
+        }
+
+        // Bridge button action
+        document.getElementById('bridgeButton').addEventListener('click', function() {
+            if (isWalletConnected) {
+                const fromAmount = document.getElementById('fromAmount').value;
+                const fromToken = document.getElementById('fromToken').value;
+                const fromChain = document.getElementById('fromChain').value;
+                const toChain = document.getElementById('toChain').value;
+                
+                if (!fromAmount || parseFloat(fromAmount) <= 0) {
+                    alert('Please enter a valid amount to bridge');
+                    return;
+                }
+
+                // Demo bridge simulation
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Initiating Bridge...';
+                this.disabled = true;
+
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-check mr-2"></i>Bridge Preview Ready';
+                    
+                    // Show bridge preview modal
+                    showBridgePreview();
+                    
+                    setTimeout(() => {
+                        this.innerHTML = 'Preview Bridge';
+                        this.disabled = false;
+                    }, 3000);
+                }, 2000);
+            }
+        });
+
+        // Show bridge preview modal
+        function showBridgePreview() {
+            const fromAmount = document.getElementById('fromAmount').value;
+            const fromToken = document.getElementById('fromToken').value;
+            const toAmount = document.getElementById('toAmount').value;
+            const toToken = document.getElementById('toToken').value;
+            const fromChain = chainConfigs[document.getElementById('fromChain').value].name;
+            const toChain = chainConfigs[document.getElementById('toChain').value].name;
+
+            alert(`🌉 Bridge Preview (Demo Mode)\n\n` +
+                  `From: ${fromAmount} ${fromToken} on ${fromChain}\n` +
+                  `To: ${toAmount} ${toToken} on ${toChain}\n\n` +
+                  `Bridge Fee: $2.34\n` +
+                  `Estimated Time: ~7 minutes\n\n` +
+                  `⚠️ This is a demo. Real bridging coming soon!`);
+        }
+
+        // Max button functionality
+        document.getElementById('maxButton').addEventListener('click', function() {
+            if (isWalletConnected) {
+                const fromChain = document.getElementById('fromChain').value;
+                const fromToken = document.getElementById('fromToken').value;
+                const maxBalance = walletBalances[fromChain][fromToken] || 0;
+                
+                document.getElementById('fromAmount').value = maxBalance.toFixed(4);
+                calculateBridge();
+            } else {
+                alert('Please connect your wallet first');
+            }
+        });
+
+        // Swap chains
+        document.getElementById('swapChains').addEventListener('click', function() {
+            const fromChain = document.getElementById('fromChain');
+            const toChain = document.getElementById('toChain');
+            
+            [fromChain.value, toChain.value] = [toChain.value, fromChain.value];
+            
+            updateChainBadges();
+            updateWalletUI();
+            calculateBridge();
+        });
+
+        // Event listeners
+        document.getElementById('fromAmount').addEventListener('input', calculateBridge);
+        document.getElementById('fromToken').addEventListener('change', function() {
+            updateWalletUI();
+            calculateBridge();
+        });
+        document.getElementById('toToken').addEventListener('change', calculateBridge);
+        document.getElementById('fromChain').addEventListener('change', function() {
+            updateChainBadges();
+            updateWalletUI();
+            calculateBridge();
+        });
+        document.getElementById('toChain').addEventListener('change', function() {
+            updateChainBadges();
+            updateWalletUI();
+            calculateBridge();
+        });
+
+        // Volume Chart
+        const volumeCtx = document.getElementById('volumeChart').getContext('2d');
+        const volumeData = Array.from({ length: 24 }, (_, i) => ({
+            x: i,
+            y: Math.random() * 2000000 + 500000
+        }));
+
+        new Chart(volumeCtx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Bridge Volume ($)',
+                    data: volumeData,
+                    borderColor: '#ff0420',
+                    backgroundColor: 'rgba(255, 4, 32, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `Volume: ${context.parsed.y.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Hours (24h)',
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(255, 4, 32, 0.1)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Volume (USD)',
+                            color: '#666'
+                        },
+                        grid: {
+                            color: 'rgba(255, 4, 32, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '
+                     + (value / 1000000).toFixed(1) + 'M';
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+
+        // Real-time updates simulation
+        setInterval(function() {
+            // Update prices slightly
+            Object.keys(tokenPrices).forEach(token => {
+                tokenPrices[token] *= (1 + (Math.random() - 0.5) * 0.001);
+            });
+            
+            // Update calculations if form has values
+            if (document.getElementById('fromAmount').value) {
+                calculateBridge();
+            }
+        }, 10000);
+
+        // Initialize
+        updateChainBadges();
+        updateWalletUI();
+
+        // Loading animation
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.bridge-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Demo notification on load
+        setTimeout(() => {
+            if (!sessionStorage.getItem('demoNotificationShown')) {
+                alert('🌉 Welcome to OP Stack Bridge Dashboard!\n\n' +
+                      '✨ This is a demo showcasing cross-Superchain bridging.\n' +
+                      '🔗 Connect wallet for full preview experience.\n' +
+                      '⚡ Built for OP Stack ecosystem!\n\n' +
+                      'Real bridging functionality coming soon!');
+                sessionStorage.setItem('demoNotificationShown', 'true');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
     <title>OP Stack Bridge - Cross-Superchain Bridge Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { 
@@ -108,10 +109,51 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
-                        <i class="fas fa-wallet mr-2"></i>
-                        Connect Wallet
-                    </button>
+                    <div class="relative">
+                        <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
+                            <i class="fas fa-wallet mr-2"></i>
+                            Connect Wallet
+                        </button>
+                        <!-- Wallet Dropdown -->
+                        <div class="absolute top-12 right-0 bg-white rounded-lg shadow-lg border hidden z-50 min-w-48" id="walletDropdown">
+                            <div class="p-2 space-y-1">
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iI0Y2ODUxQiIvPgo8cGF0aCBkPSJNMjUuNjUgNC44NUwyMC4zIDEwLjdIMTEuN0w2LjM1IDQuODVDNS4xIDMuNiA0LjUgNC4yIDQuNSA1LjlWMjQuNEM0LjUgMjYuMSA1LjEgMjYuNyA2LjM1IDI1LjQ1TDExLjcgMTkuNkgyMC4zTDI1LjY1IDI1LjQ1QzI2LjkgMjYuNyAyNy41IDI2LjEgMjcuNSAyNC40VjUuOUMyNy41IDQuMiAyNi45IDMuNiAyNS42NSA0Ljg1WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+" alt="MetaMask" class="w-6 h-6">
+                                    <div>
+                                        <div class="font-medium">MetaMask</div>
+                                        <div class="text-xs text-gray-500">Browser Extension</div>
+                                    </div>
+                                </button>
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="walletconnect">
+                                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-qrcode text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">WalletConnect</div>
+                                        <div class="text-xs text-gray-500">OKX, Zerion, Trust...</div>
+                                    </div>
+                                </button>
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="coinbase">
+                                    <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-c text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Coinbase Wallet</div>
+                                        <div class="text-xs text-gray-500">Mobile & Extension</div>
+                                    </div>
+                                </button>
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="rainbow">
+                                    <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-rainbow text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Rainbow</div>
+                                        <div class="text-xs text-gray-500">Mobile Wallet</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="text-green-600 text-sm font-medium">
                         <i class="fas fa-circle text-xs mr-1"></i>
                         All Chains Live
@@ -397,9 +439,293 @@
     </div>
 
     <script>
+        // Web3 Configuration
+        const CHAIN_CONFIGS = {
+            '0xa': { // Optimism
+                name: 'OP Mainnet',
+                rpcUrl: 'https://mainnet.optimism.io',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
+            },
+            '0x2105': { // Base
+                name: 'Base',
+                rpcUrl: 'https://mainnet.base.org',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
+            },
+            '0x76adf1': { // Zora
+                name: 'Zora',
+                rpcUrl: 'https://rpc.zora.energy',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
+            },
+            '0x397': { // Mode
+                name: 'Mode',
+                rpcUrl: 'https://mainnet.mode.network',
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
+            }
+        };
+
         // Wallet connection state
         let isWalletConnected = false;
         let walletAddress = "";
+        let currentProvider = null;
+        let currentWalletType = "";
+
+        // Real wallet detection and connection
+        async function connectWallet(walletType) {
+            try {
+                switch (walletType) {
+                    case 'metamask':
+                        await connectMetaMask();
+                        break;
+                    case 'walletconnect':
+                        await connectWalletConnect();
+                        break;
+                    case 'coinbase':
+                        await connectCoinbaseWallet();
+                        break;
+                    case 'rainbow':
+                        await connectRainbow();
+                        break;
+                    default:
+                        throw new Error('Unsupported wallet type');
+                }
+            } catch (error) {
+                console.error('Wallet connection failed:', error);
+                alert(`Failed to connect ${walletType}: ${error.message}`);
+            }
+        }
+
+        // MetaMask Connection
+        async function connectMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    
+                    if (accounts.length > 0) {
+                        currentProvider = window.ethereum;
+                        currentWalletType = 'MetaMask';
+                        walletAddress = accounts[0];
+                        isWalletConnected = true;
+                        
+                        // Get current chain
+                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        console.log('Connected to chain:', chainId);
+                        
+                        // Get real balance
+                        await updateRealBalance();
+                        updateWalletUI();
+                        
+                        // Listen for account changes
+                        window.ethereum.on('accountsChanged', handleAccountsChanged);
+                        window.ethereum.on('chainChanged', handleChainChanged);
+                        
+                        document.getElementById('walletButton').innerHTML = 
+                            `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                        document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                        document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                        document.getElementById('bridgeButton').disabled = false;
+                        
+                        hideWalletDropdown();
+                    }
+                } catch (error) {
+                    throw new Error('User rejected the request or MetaMask error');
+                }
+            } else {
+                throw new Error('MetaMask is not installed. Please install MetaMask extension.');
+            }
+        }
+
+        // WalletConnect (for OKX, Zerion, Trust Wallet, etc.)
+        async function connectWalletConnect() {
+            try {
+                // This is a simplified version - in production you'd use proper WalletConnect v2
+                alert('🔗 WalletConnect Integration\n\nThis would open QR code for:\n• OKX Wallet\n• Zerion\n• Trust Wallet\n• 1inch Wallet\n• And 300+ other wallets\n\n📱 Demo: Connecting with WalletConnect...');
+                
+                // Simulate successful connection
+                setTimeout(() => {
+                    currentWalletType = 'WalletConnect';
+                    walletAddress = "0x742d35Cc1e32f30a6b5D8b9F94B2F52f4c74f50E"; // Demo address
+                    isWalletConnected = true;
+                    
+                    updateWalletUI();
+                    document.getElementById('walletButton').innerHTML = 
+                        `<i class="fas fa-qrcode mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                    document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                    document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                    document.getElementById('bridgeButton').disabled = false;
+                    
+                    hideWalletDropdown();
+                }, 1500);
+                
+            } catch (error) {
+                throw new Error('WalletConnect connection failed');
+            }
+        }
+
+        // Coinbase Wallet
+        async function connectCoinbaseWallet() {
+            if (typeof window.ethereum !== 'undefined' && window.ethereum.isCoinbaseWallet) {
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    
+                    currentProvider = window.ethereum;
+                    currentWalletType = 'Coinbase Wallet';
+                    walletAddress = accounts[0];
+                    isWalletConnected = true;
+                    
+                    await updateRealBalance();
+                    updateWalletUI();
+                    
+                    document.getElementById('walletButton').innerHTML = 
+                        `<i class="fas fa-c mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                    document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                    document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                    document.getElementById('bridgeButton').disabled = false;
+                    
+                    hideWalletDropdown();
+                } catch (error) {
+                    throw new Error('Coinbase Wallet connection failed');
+                }
+            } else {
+                alert('🔗 Coinbase Wallet\n\nPlease install Coinbase Wallet extension or use mobile app with WalletConnect.\n\n📱 Demo: Simulating connection...');
+                
+                // Simulate connection
+                setTimeout(() => {
+                    currentWalletType = 'Coinbase Wallet';
+                    walletAddress = "0x8ba1f109551bD432803012645Hac136c32960E9B";
+                    isWalletConnected = true;
+                    
+                    updateWalletUI();
+                    document.getElementById('walletButton').innerHTML = 
+                        `<i class="fas fa-c mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                    document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                    document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                    document.getElementById('bridgeButton').disabled = false;
+                    
+                    hideWalletDropdown();
+                }, 1000);
+            }
+        }
+
+        // Rainbow Wallet
+        async function connectRainbow() {
+            alert('🌈 Rainbow Wallet\n\nRainbow is primarily a mobile wallet.\n\nUse WalletConnect to connect Rainbow mobile app.\n\n📱 Demo: Simulating connection...');
+            
+            setTimeout(() => {
+                currentWalletType = 'Rainbow';
+                walletAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
+                isWalletConnected = true;
+                
+                updateWalletUI();
+                document.getElementById('walletButton').innerHTML = 
+                    `<i class="fas fa-rainbow mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+                document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+                document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                document.getElementById('bridgeButton').disabled = false;
+                
+                hideWalletDropdown();
+            }, 1000);
+        }
+
+        // Get real ETH balance
+        async function updateRealBalance() {
+            if (!currentProvider || !walletAddress) return;
+            
+            try {
+                const balance = await currentProvider.request({
+                    method: 'eth_getBalance',
+                    params: [walletAddress, 'latest']
+                });
+                
+                const ethBalance = parseInt(balance, 16) / Math.pow(10, 18);
+                
+                // Update UI with real balance
+                const fromChain = document.getElementById('fromChain').value;
+                const fromToken = document.getElementById('fromToken').value;
+                
+                if (fromToken === 'ETH') {
+                    document.getElementById('fromBalance').textContent = `Balance: ${ethBalance.toFixed(4)} ETH`;
+                } else {
+                    // For other tokens, you'd need to call token contract
+                    document.getElementById('fromBalance').textContent = `Balance: ${ethBalance.toFixed(4)} ETH`;
+                }
+                
+            } catch (error) {
+                console.error('Error fetching balance:', error);
+            }
+        }
+
+        // Handle account changes
+        function handleAccountsChanged(accounts) {
+            if (accounts.length === 0) {
+                disconnectWallet();
+            } else {
+                walletAddress = accounts[0];
+                updateRealBalance();
+                updateWalletUI();
+            }
+        }
+
+        // Handle chain changes
+        function handleChainChanged(chainId) {
+            console.log('Chain changed to:', chainId);
+            updateRealBalance();
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            isWalletConnected = false;
+            walletAddress = "";
+            currentProvider = null;
+            currentWalletType = "";
+            
+            document.getElementById('walletButton').innerHTML = '<i class="fas fa-wallet mr-2"></i>Connect Wallet';
+            document.getElementById('walletButton').className = 'wallet-button px-4 py-2 rounded-lg font-medium';
+            document.getElementById('bridgeButton').textContent = 'Connect Wallet to Bridge';
+            document.getElementById('bridgeButton').disabled = true;
+            
+            updateWalletUI();
+        }
+
+        // Show/Hide wallet dropdown
+        function showWalletDropdown() {
+            document.getElementById('walletDropdown').classList.remove('hidden');
+        }
+
+        function hideWalletDropdown() {
+            document.getElementById('walletDropdown').classList.add('hidden');
+        }
+
+        // Wallet button click handler
+        document.getElementById('walletButton').addEventListener('click', function() {
+            if (!isWalletConnected) {
+                showWalletDropdown();
+            } else {
+                // Disconnect if already connected
+                disconnectWallet();
+            }
+        });
+
+        // Wallet option click handlers
+        document.querySelectorAll('.wallet-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const walletType = this.getAttribute('data-wallet');
+                connectWallet(walletType);
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('walletDropdown');
+            const button = document.getElementById('walletButton');
+            
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                hideWalletDropdown();
+            }
+        });
 
         // Token prices (demo data)
         const tokenPrices = {

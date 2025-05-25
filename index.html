@@ -147,6 +147,15 @@
                                         <div class="text-xs text-gray-500">Browser Extension</div>
                                     </div>
                                 </button>
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="demo">
+                                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-play text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Demo Wallet</div>
+                                        <div class="text-xs text-gray-500">Test Connection</div>
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -445,34 +454,10 @@
     <script>
         // Testnet network configurations
         const TESTNET_CONFIGS = {
-            'op-sepolia': {
-                chainId: '0xaa37dc',
-                name: 'OP Sepolia',
-                rpcUrl: 'https://sepolia.optimism.io',
-                blockExplorer: 'https://sepolia-optimism.etherscan.io',
-                badge: 'op-sepolia'
-            },
-            'base-sepolia': {
-                chainId: '0x14a34',
-                name: 'Base Sepolia',
-                rpcUrl: 'https://sepolia.base.org',
-                blockExplorer: 'https://sepolia.basescan.org',
-                badge: 'base-sepolia'
-            },
-            'zora-sepolia': {
-                chainId: '0x3b9ac9ff',
-                name: 'Zora Sepolia',
-                rpcUrl: 'https://sepolia.rpc.zora.energy',
-                blockExplorer: 'https://sepolia.explorer.zora.energy',
-                badge: 'zora-sepolia'
-            },
-            'mode-sepolia': {
-                chainId: '0x397',
-                name: 'Mode Sepolia',
-                rpcUrl: 'https://sepolia.mode.network',
-                blockExplorer: 'https://sepolia.explorer.mode.network',
-                badge: 'mode-sepolia'
-            }
+            'op-sepolia': { chainId: '0xaa37dc', name: 'OP Sepolia', badge: 'op-sepolia' },
+            'base-sepolia': { chainId: '0x14a34', name: 'Base Sepolia', badge: 'base-sepolia' },
+            'zora-sepolia': { chainId: '0x3b9ac9ff', name: 'Zora Sepolia', badge: 'zora-sepolia' },
+            'mode-sepolia': { chainId: '0x397', name: 'Mode Sepolia', badge: 'mode-sepolia' }
         };
 
         // Faucet URLs
@@ -489,7 +474,7 @@
         let walletAddress = "";
         let currentChainId = "";
 
-        // Connect wallet
+        // Connect wallet button
         document.getElementById('walletButton').addEventListener('click', function() {
             if (!isWalletConnected) {
                 const dropdown = document.getElementById('walletDropdown');
@@ -499,12 +484,14 @@
             }
         });
 
-        // Wallet option handlers
+        // Wallet options
         document.querySelectorAll('[data-wallet]').forEach(button => {
             button.addEventListener('click', async function() {
                 const walletType = this.getAttribute('data-wallet');
                 if (walletType === 'metamask') {
                     await connectMetaMask();
+                } else if (walletType === 'demo') {
+                    connectDemo();
                 }
                 document.getElementById('walletDropdown').classList.add('hidden');
             });
@@ -521,14 +508,11 @@
                     if (accounts.length > 0) {
                         walletAddress = accounts[0];
                         isWalletConnected = true;
-                        
-                        // Get current chain
                         currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
                         
                         updateWalletUI();
                         await updateBalances();
                         
-                        // Listen for network changes
                         window.ethereum.on('chainChanged', handleChainChanged);
                         window.ethereum.on('accountsChanged', handleAccountsChanged);
                         
@@ -538,17 +522,31 @@
                         document.getElementById('bridgeButton').textContent = 'Preview Test Bridge';
                         document.getElementById('bridgeButton').disabled = false;
                         
-                        alert('✅ MetaMask Connected!\n\n' +
-                              'Address: ' + walletAddress.substring(0, 10) + '...\n' +
-                              'Network: ' + getNetworkName(currentChainId) + '\n\n' +
-                              '💡 Get test tokens from faucets to start testing!');
+                        alert('✅ MetaMask Connected!\n\nAddress: ' + walletAddress.substring(0, 10) + '...\nNetwork: ' + getNetworkName(currentChainId));
                     }
                 } catch (error) {
                     alert('❌ Connection failed: ' + error.message);
                 }
             } else {
-                alert('❌ MetaMask not found!\n\nPlease install MetaMask:\n• Go to metamask.io\n• Install extension\n• Create wallet\n• Return here');
+                alert('❌ MetaMask not found!\n\nPlease install MetaMask extension.');
             }
+        }
+
+        // Demo connection
+        function connectDemo() {
+            walletAddress = "0x7FbD935c9972b6A4c0b6F7c6f650996677bF6e0A";
+            isWalletConnected = true;
+            currentChainId = "0xaa37dc"; // OP Sepolia
+            
+            updateWalletUI();
+            
+            document.getElementById('walletButton').innerHTML = 
+                `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+            document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+            document.getElementById('bridgeButton').textContent = 'Preview Test Bridge';
+            document.getElementById('bridgeButton').disabled = false;
+            
+            alert('✅ Demo Wallet Connected!\n\nAddress: ' + walletAddress);
         }
 
         // Update wallet UI
@@ -556,13 +554,8 @@
             const networkName = getNetworkName(currentChainId);
             document.getElementById('currentNetwork').textContent = networkName;
             
-            // Show network switch button if not on testnet
-            const switchBtn = document.getElementById('switchNetworkBtn');
-            if (!isTestnetChain(currentChainId)) {
-                switchBtn.style.display = 'block';
-                switchBtn.onclick = () => switchToNetwork('op-sepolia');
-            } else {
-                switchBtn.style.display = 'none';
-            }
-            
-            // Update wallet info
+            if (isWalletConnected) {
+                document.getElementById('walletInfo').innerHTML = `
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600

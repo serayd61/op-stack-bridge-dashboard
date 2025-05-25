@@ -6,7 +6,6 @@
     <title>OP Stack Bridge - Cross-Superchain Bridge Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { 
@@ -125,7 +124,7 @@
                             <div class="p-2 space-y-1">
                                 <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
                                     <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-fox-head text-white text-xs"></i>
+                                        <i class="fas fa-m text-white text-xs"></i>
                                     </div>
                                     <div>
                                         <div class="font-medium">MetaMask</div>
@@ -152,7 +151,7 @@
                                 </button>
                                 <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="rainbow">
                                     <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-rainbow text-white text-xs"></i>
+                                        <i class="fas fa-r text-white text-xs"></i>
                                     </div>
                                     <div>
                                         <div class="font-medium">Rainbow</div>
@@ -315,7 +314,7 @@
 
                 <!-- Chain Status -->
                 <div class="glass-card rounded-xl p-6">
-                    <h3 class="text-lg font-semibold op-red mb-4">
+                    <h3 class="text-lg font-semibiant op-red mb-4">
                         <i class="fas fa-network-wired mr-2"></i>Chain Status
                     </h3>
                     <div class="space-y-3">
@@ -447,37 +446,37 @@
     </div>
 
     <script>
-        // Web3 Configuration
-        const CHAIN_CONFIGS = {
-            '0xa': { // Optimism
-                name: 'OP Mainnet',
-                rpcUrl: 'https://mainnet.optimism.io',
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
-            },
-            '0x2105': { // Base
-                name: 'Base',
-                rpcUrl: 'https://mainnet.base.org',
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
-            },
-            '0x76adf1': { // Zora
-                name: 'Zora',
-                rpcUrl: 'https://rpc.zora.energy',
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
-            },
-            '0x397': { // Mode
-                name: 'Mode',
-                rpcUrl: 'https://mainnet.mode.network',
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }
-            }
-        };
-
         // Wallet connection state
         let isWalletConnected = false;
         let walletAddress = "";
         let currentProvider = null;
         let currentWalletType = "";
 
-        // Real wallet detection and connection
+        // Token prices (demo data)
+        const tokenPrices = {
+            'ETH': 2247.85,
+            'USDC': 1.00,
+            'USDT': 0.999,
+            'OP': 2.34
+        };
+
+        // Chain configurations
+        const chainConfigs = {
+            'optimism': { name: 'OP Mainnet', badge: 'op-mainnet', icon: 'fas fa-circle' },
+            'base': { name: 'Base', badge: 'base-chain', icon: 'fas fa-circle' },
+            'zora': { name: 'Zora', badge: 'zora-chain', icon: 'fas fa-circle' },
+            'mode': { name: 'Mode', badge: 'mode-chain', icon: 'fas fa-circle' }
+        };
+
+        // Demo wallet balances
+        const walletBalances = {
+            'optimism': { 'ETH': 2.5678, 'USDC': 1250.50, 'OP': 150.25, 'USDT': 500.00 },
+            'base': { 'ETH': 1.2345, 'USDC': 750.25, 'OP': 0, 'USDT': 300.00 },
+            'zora': { 'ETH': 0.8756, 'USDC': 200.10, 'OP': 0, 'USDT': 0 },
+            'mode': { 'ETH': 0.5432, 'USDC': 100.50, 'OP': 25.75, 'USDT': 150.00 }
+        };
+
+        // Real wallet connection functions
         async function connectWallet(walletType) {
             try {
                 switch (walletType) {
@@ -516,17 +515,9 @@
                         walletAddress = accounts[0];
                         isWalletConnected = true;
                         
-                        // Get current chain
-                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-                        console.log('Connected to chain:', chainId);
-                        
                         // Get real balance
                         await updateRealBalance();
                         updateWalletUI();
-                        
-                        // Listen for account changes
-                        window.ethereum.on('accountsChanged', handleAccountsChanged);
-                        window.ethereum.on('chainChanged', handleChainChanged);
                         
                         document.getElementById('walletButton').innerHTML = 
                             `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
@@ -535,20 +526,24 @@
                         document.getElementById('bridgeButton').disabled = false;
                         
                         hideWalletDropdown();
+                        alert('✅ MetaMask Connected Successfully!\n\nAddress: ' + walletAddress.substring(0, 10) + '...' + walletAddress.substring(32));
                     }
                 } catch (error) {
                     throw new Error('User rejected the request or MetaMask error');
                 }
             } else {
-                throw new Error('MetaMask is not installed. Please install MetaMask extension.');
+                alert('❌ MetaMask Not Found\n\nPlease install MetaMask extension:\n• Go to metamask.io\n• Install browser extension\n• Create or import wallet\n• Refresh this page');
             }
         }
 
-        // WalletConnect (for OKX, Zerion, Trust Wallet, etc.)
+        // WalletConnect
         async function connectWalletConnect() {
-            try {
-                alert('🔗 WalletConnect Integration\n\nThis would open QR code for:\n• OKX Wallet\n• Zerion\n• Trust Wallet\n• 1inch Wallet\n• And 300+ other wallets\n\n📱 Demo: Connecting with WalletConnect...');
+            alert('🔗 WalletConnect Integration\n\nThis would open QR code for:\n• OKX Wallet\n• Zerion\n• Trust Wallet\n• 1inch Wallet\n• And 300+ other wallets\n\n📱 Demo: Simulating connection...');
+            
+            setTimeout(() => {
+                currentWalletType = 'WalletConnect';
+                walletAddress = "0x742d35Cc1e32f30a6b5D8b9F94B2F52f4c74f50E";
+                isWalletConnected = true;
                 
-                // Simulate successful connection
-                setTimeout(() => {
-                    currentWalletType = 'WalletConnect
+                updateWalletUI();
+                document.getElementById('

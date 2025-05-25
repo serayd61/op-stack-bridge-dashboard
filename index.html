@@ -19,151 +19,39 @@
             backdrop-filter: blur(15px);
             box-shadow: 0 8px 32px rgba(255, 4, 32, 0.1);
         }
-        .op-red { color: #ff0420; }
-        .op-gradient {
-            background: linear-gradient(45deg, #ff0420, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .chain-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .op-mainnet { background: linear-gradient(45deg, #ff0420, #ff6b6b); }
-        .base-chain { background: linear-gradient(45deg, #0052ff, #4285f4); }
-        .zora-chain { background: linear-gradient(45deg, #000000, #333333); }
-        .mode-chain { background: linear-gradient(45deg, #dffe00, #b8cc00); color: #000; }
-        .bridge-card {
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 4, 32, 0.1);
-            transition: all 0.3s ease;
-        }
-        .bridge-card:hover {
-            border-color: #ff0420;
-            box-shadow: 0 8px 25px rgba(255, 4, 32, 0.15);
-            transform: translateY(-2px);
-        }
-        .bridge-button {
-            background: linear-gradient(45deg, #ff0420, #ff6b6b);
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .bridge-button:hover {
-            background: linear-gradient(45deg, #e6031c, #ff5252);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 4, 32, 0.3);
-        }
-        .bridge-button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .token-input {
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid rgba(255, 4, 32, 0.2);
-            color: #1a1a1a;
-        }
-        .token-input:focus {
-            border-color: #ff0420;
-            box-shadow: 0 0 0 3px rgba(255, 4, 32, 0.1);
-        }
-        .status-pending { color: #f59e0b; }
-        .status-completed { color: #10b981; }
-        .status-failed { color: #ef4444; }
-        .wallet-button {
-            background: rgba(255, 4, 32, 0.1);
-            border: 1px solid #ff0420;
-            color: #ff0420;
-            transition: all 0.3s ease;
-        }
-        .wallet-button:hover {
-            background: #ff0420;
-            color: white;
-        }
-        .connected {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: #10b981;
-            color: #10b981;
-        }
-        .wallet-option {
-            transition: all 0.2s ease;
-        }
-        .wallet-option:hover {
-            background-color: #f3f4f6;
-        }
+        .wallet-button { background: rgba(255, 4, 32, 0.1); border: 1px solid #ff0420; color: #ff0420; }
+        .wallet-button:hover { background: #ff0420; color: white; }
+        .connected { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981; }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Header -->
+<body>
     <div class="glass-card border-b">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <i class="fas fa-bridge text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold op-gradient">OP Stack Bridge</h1>
-                        <p class="text-sm text-gray-600">Cross-Superchain Bridge Dashboard</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
-                            <i class="fas fa-wallet mr-2"></i>
-                            Connect Wallet
-                        </button>
-                        <!-- Wallet Dropdown -->
-                        <div class="absolute top-12 right-0 bg-white rounded-lg shadow-lg border hidden z-50 min-w-48" id="walletDropdown">
-                            <div class="p-2 space-y-1">
-                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
-                                    <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-m text-white text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">MetaMask</div>
-                                        <div class="text-xs text-gray-500">Browser Extension</div>
-                                    </div>
-                                </button>
-                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="walletconnect">
-                                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-qrcode text-white text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">WalletConnect</div>
-                                        <div class="text-xs text-gray-500">OKX, Zerion, Trust...</div>
-                                    </div>
-                                </button>
-                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="coinbase">
-                                    <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-c text-white text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Coinbase Wallet</div>
-                                        <div class="text-xs text-gray-500">Mobile & Extension</div>
-                                    </div>
-                                </button>
-                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="rainbow">
-                                    <div class="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                                        <i class="fas fa-r text-white text-xs"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-medium">Rainbow</div>
-                                        <div class="text-xs text-gray-500">Mobile Wallet</div>
-                                    </div>
-                                </button>
+                <h1 class="text-2xl font-bold" style="background: linear-gradient(45deg, #ff0420, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">OP Stack Bridge</h1>
+                <div class="relative">
+                    <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
+                        <i class="fas fa-wallet mr-2"></i>Connect Wallet
+                    </button>
+                    <div class="absolute top-12 right-0 bg-white rounded-lg shadow-lg border hidden z-50 min-w-48" id="walletDropdown">
+                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
+                            <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-m text-white text-xs"></i>
                             </div>
-                        </div>
-                    </div>
-                    <div class="text-green-600 text-sm font-medium">
-                        <i class="fas fa-circle text-xs mr-1"></i>
-                        All Chains Live
+                            <div>
+                                <div class="font-medium">MetaMask</div>
+                                <div class="text-xs text-gray-500">Browser Extension</div>
+                            </div>
+                        </button>
+                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center space-x-3" data-wallet="demo">
+                            <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-play text-white text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">Demo Wallet</div>
+                                <div class="text-xs text-gray-500">Test Connection</div>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -171,337 +59,53 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-6 py-8">
-        
-        <!-- Bridge Interface -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2">
-                <div class="glass-card rounded-xl p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-xl font-bold op-red">Bridge Assets</h2>
-                        <div class="flex items-center space-x-2">
-                            <i class="fas fa-shield-alt text-green-500"></i>
-                            <span class="text-sm text-gray-600">Secured by OP Stack</span>
-                        </div>
-                    </div>
-
-                    <!-- From Chain -->
-                    <div class="space-y-6">
-                        <div class="bridge-card rounded-lg p-4">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-sm font-medium text-gray-600">From</span>
-                                <span class="text-sm text-gray-500" id="fromBalance">Balance: --</span>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <select class="token-input rounded-lg px-3 py-2" id="fromChain">
-                                    <option value="optimism">OP Mainnet</option>
-                                    <option value="base">Base</option>
-                                    <option value="zora">Zora</option>
-                                    <option value="mode">Mode</option>
-                                </select>
-                                <select class="token-input rounded-lg px-3 py-2" id="fromToken">
-                                    <option value="ETH">ETH</option>
-                                    <option value="USDC">USDC</option>
-                                    <option value="OP">OP</option>
-                                    <option value="USDT">USDT</option>
-                                </select>
-                                <div class="relative">
-                                    <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="fromAmount">
-                                    <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 text-sm hover:text-red-600 font-medium" id="maxButton">MAX</button>
-                                </div>
-                            </div>
-                            <div class="flex justify-between mt-2">
-                                <span class="text-xs text-gray-500" id="fromUsdValue">≈ $0.00</span>
-                                <div class="chain-badge op-mainnet" id="fromChainBadge">
-                                    <i class="fas fa-circle text-xs"></i>
-                                    OP Mainnet
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bridge Arrow -->
-                        <div class="flex justify-center">
-                            <button class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-full flex items-center justify-center transition-all duration-300" id="swapChains">
-                                <i class="fas fa-arrow-down text-white text-lg"></i>
-                            </button>
-                        </div>
-
-                        <!-- To Chain -->
-                        <div class="bridge-card rounded-lg p-4">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-sm font-medium text-gray-600">To</span>
-                                <span class="text-sm text-gray-500" id="toBalance">Balance: --</span>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <select class="token-input rounded-lg px-3 py-2" id="toChain">
-                                    <option value="base">Base</option>
-                                    <option value="optimism">OP Mainnet</option>
-                                    <option value="zora">Zora</option>
-                                    <option value="mode">Mode</option>
-                                </select>
-                                <select class="token-input rounded-lg px-3 py-2" id="toToken">
-                                    <option value="ETH">ETH</option>
-                                    <option value="USDC">USDC</option>
-                                    <option value="OP">OP</option>
-                                    <option value="USDT">USDT</option>
-                                </select>
-                                <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="toAmount" readonly>
-                            </div>
-                            <div class="flex justify-between mt-2">
-                                <span class="text-xs text-gray-500" id="toUsdValue">≈ $0.00</span>
-                                <div class="chain-badge base-chain" id="toChainBadge">
-                                    <i class="fas fa-circle text-xs"></i>
-                                    Base
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bridge Details -->
-                        <div class="bridge-card rounded-lg p-4" id="bridgeDetails" style="display: none;">
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="text-sm font-medium text-gray-600">Bridge Details</span>
-                                <i class="fas fa-info-circle text-gray-400"></i>
-                            </div>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Bridge Fee:</span>
-                                    <span id="bridgeFee">$2.34</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Estimated Time:</span>
-                                    <span id="bridgeTime">~7 minutes</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">You'll receive:</span>
-                                    <span id="receiveAmount" class="font-medium">--</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bridge Button -->
-                        <button class="bridge-button w-full py-4 rounded-lg font-semibold text-lg" id="bridgeButton" disabled>
-                            Connect Wallet to Bridge
-                        </button>
-                    </div>
-                </div>
+        <div class="glass-card rounded-xl p-6 text-center">
+            <h2 class="text-xl font-bold mb-4" style="color: #ff0420;">Cross-Superchain Bridge</h2>
+            <p>Connect your wallet to start bridging between OP Mainnet, Base, Zora, and Mode!</p>
+            <div class="mt-6">
+                <button class="px-6 py-3 rounded-lg font-medium" style="background: linear-gradient(45deg, #ff0420, #ff6b6b); color: white;" id="bridgeButton" disabled>
+                    Connect Wallet to Bridge
+                </button>
             </div>
-
-            <!-- Bridge Analytics -->
-            <div class="space-y-6">
-                <!-- Bridge Statistics -->
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="text-lg font-semibold op-red mb-4">
-                        <i class="fas fa-chart-bar mr-2"></i>Bridge Analytics
-                    </h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">24h Volume</span>
-                            <span class="font-semibold">$12.4M</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Total Bridges</span>
-                            <span class="font-semibold">8,456</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Avg. Bridge Time</span>
-                            <span class="font-semibold">6.2 min</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Success Rate</span>
-                            <span class="font-semibold text-green-600">99.8%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chain Status -->
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="text-lg font-semibiant op-red mb-4">
-                        <i class="fas fa-network-wired mr-2"></i>Chain Status
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-sm">OP Mainnet</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium">⛽ 0.2 gwei</div>
-                                <div class="text-xs text-gray-500">Fast</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-sm">Base</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium">⛽ 0.1 gwei</div>
-                                <div class="text-xs text-gray-500">Fast</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span class="text-sm">Zora</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium">⛽ 0.05 gwei</div>
-                                <div class="text-xs text-gray-500">Fast</div>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                <span class="text-sm">Mode</span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium">⛽ 0.3 gwei</div>
-                                <div class="text-xs text-gray-500">Medium</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Bridges -->
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="text-lg font-semibold op-red mb-4">
-                        <i class="fas fa-history mr-2"></i>Your Recent Bridges
-                    </h3>
-                    <div class="space-y-3" id="recentBridges">
-                        <div class="text-center text-gray-500 py-8">
-                            <i class="fas fa-wallet text-3xl mb-2 opacity-50"></i>
-                            <p class="text-sm">Connect wallet to view history</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bridge Volume Chart -->
-        <div class="glass-card rounded-xl p-6 mb-8">
-            <h3 class="text-lg font-semibold op-red mb-6">
-                <i class="fas fa-chart-line mr-2"></i>Cross-Chain Bridge Volume (24h)
-            </h3>
-            <div class="h-64">
-                <canvas id="volumeChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Popular Routes -->
-        <div class="glass-card rounded-xl p-6 mb-8">
-            <h3 class="text-lg font-semibold op-red mb-6">
-                <i class="fas fa-route mr-2"></i>Popular Bridge Routes
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bridge-card rounded-lg p-4 text-center">
-                    <div class="flex justify-center items-center space-x-2 mb-2">
-                        <span class="chain-badge op-mainnet text-xs">OP</span>
-                        <i class="fas fa-arrow-right text-gray-400"></i>
-                        <span class="chain-badge base-chain text-xs">Base</span>
-                    </div>
-                    <div class="text-sm text-gray-600">ETH Bridge</div>
-                    <div class="text-lg font-semibold">$3.2M</div>
-                    <div class="text-xs text-green-600">+12.3%</div>
-                </div>
-                <div class="bridge-card rounded-lg p-4 text-center">
-                    <div class="flex justify-center items-center space-x-2 mb-2">
-                        <span class="chain-badge base-chain text-xs">Base</span>
-                        <i class="fas fa-arrow-right text-gray-400"></i>
-                        <span class="chain-badge op-mainnet text-xs">OP</span>
-                    </div>
-                    <div class="text-sm text-gray-600">USDC Bridge</div>
-                    <div class="text-lg font-semibold">$2.8M</div>
-                    <div class="text-xs text-green-600">+8.7%</div>
-                </div>
-                <div class="bridge-card rounded-lg p-4 text-center">
-                    <div class="flex justify-center items-center space-x-2 mb-2">
-                        <span class="chain-badge zora-chain text-xs">Zora</span>
-                        <i class="fas fa-arrow-right text-gray-400"></i>
-                        <span class="chain-badge base-chain text-xs">Base</span>
-                    </div>
-                    <div class="text-sm text-gray-600">ETH Bridge</div>
-                    <div class="text-lg font-semibold">$1.1M</div>
-                    <div class="text-xs text-red-600">-3.2%</div>
-                </div>
-                <div class="bridge-card rounded-lg p-4 text-center">
-                    <div class="flex justify-center items-center space-x-2 mb-2">
-                        <span class="chain-badge mode-chain text-xs">Mode</span>
-                        <i class="fas fa-arrow-right text-gray-400"></i>
-                        <span class="chain-badge op-mainnet text-xs">OP</span>
-                    </div>
-                    <div class="text-sm text-gray-600">OP Bridge</div>
-                    <div class="text-lg font-semibold">$890K</div>
-                    <div class="text-xs text-green-600">+15.1%</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center">
-            <div class="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500/10 to-red-600/10 rounded-full border border-red-500/20">
-                <i class="fas fa-bridge op-red"></i>
-                <span class="text-sm font-medium op-gradient">Powered by OP Stack Technology</span>
-            </div>
-            <p class="text-xs text-gray-500 mt-3">Built for Superchain Ecosystem | serayd61</p>
         </div>
     </div>
 
     <script>
-        // Wallet connection state
         let isWalletConnected = false;
         let walletAddress = "";
-        let currentProvider = null;
-        let currentWalletType = "";
 
-        // Token prices (demo data)
-        const tokenPrices = {
-            'ETH': 2247.85,
-            'USDC': 1.00,
-            'USDT': 0.999,
-            'OP': 2.34
-        };
-
-        // Chain configurations
-        const chainConfigs = {
-            'optimism': { name: 'OP Mainnet', badge: 'op-mainnet', icon: 'fas fa-circle' },
-            'base': { name: 'Base', badge: 'base-chain', icon: 'fas fa-circle' },
-            'zora': { name: 'Zora', badge: 'zora-chain', icon: 'fas fa-circle' },
-            'mode': { name: 'Mode', badge: 'mode-chain', icon: 'fas fa-circle' }
-        };
-
-        // Demo wallet balances
-        const walletBalances = {
-            'optimism': { 'ETH': 2.5678, 'USDC': 1250.50, 'OP': 150.25, 'USDT': 500.00 },
-            'base': { 'ETH': 1.2345, 'USDC': 750.25, 'OP': 0, 'USDT': 300.00 },
-            'zora': { 'ETH': 0.8756, 'USDC': 200.10, 'OP': 0, 'USDT': 0 },
-            'mode': { 'ETH': 0.5432, 'USDC': 100.50, 'OP': 25.75, 'USDT': 150.00 }
-        };
-
-        // Real wallet connection functions
-        async function connectWallet(walletType) {
-            try {
-                switch (walletType) {
-                    case 'metamask':
-                        await connectMetaMask();
-                        break;
-                    case 'walletconnect':
-                        await connectWalletConnect();
-                        break;
-                    case 'coinbase':
-                        await connectCoinbaseWallet();
-                        break;
-                    case 'rainbow':
-                        await connectRainbow();
-                        break;
-                    default:
-                        throw new Error('Unsupported wallet type');
-                }
-            } catch (error) {
-                console.error('Wallet connection failed:', error);
-                alert(`Failed to connect ${walletType}: ${error.message}`);
+        // Show wallet dropdown
+        document.getElementById('walletButton').addEventListener('click', function() {
+            if (!isWalletConnected) {
+                const dropdown = document.getElementById('walletDropdown');
+                dropdown.classList.toggle('hidden');
+            } else {
+                // Disconnect
+                isWalletConnected = false;
+                walletAddress = "";
+                this.innerHTML = '<i class="fas fa-wallet mr-2"></i>Connect Wallet';
+                this.className = 'wallet-button px-4 py-2 rounded-lg font-medium';
+                document.getElementById('bridgeButton').textContent = 'Connect Wallet to Bridge';
+                document.getElementById('bridgeButton').disabled = true;
             }
-        }
+        });
 
-        // MetaMask Connection
+        // Wallet connection handlers
+        document.querySelectorAll('[data-wallet]').forEach(button => {
+            button.addEventListener('click', async function() {
+                const walletType = this.getAttribute('data-wallet');
+                
+                if (walletType === 'metamask') {
+                    await connectMetaMask();
+                } else if (walletType === 'demo') {
+                    connectDemo();
+                }
+                
+                document.getElementById('walletDropdown').classList.add('hidden');
+            });
+        });
+
+        // MetaMask connection
         async function connectMetaMask() {
             if (typeof window.ethereum !== 'undefined') {
                 try {
@@ -510,14 +114,8 @@
                     });
                     
                     if (accounts.length > 0) {
-                        currentProvider = window.ethereum;
-                        currentWalletType = 'MetaMask';
                         walletAddress = accounts[0];
                         isWalletConnected = true;
-                        
-                        // Get real balance
-                        await updateRealBalance();
-                        updateWalletUI();
                         
                         document.getElementById('walletButton').innerHTML = 
                             `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
@@ -525,25 +123,46 @@
                         document.getElementById('bridgeButton').textContent = 'Preview Bridge';
                         document.getElementById('bridgeButton').disabled = false;
                         
-                        hideWalletDropdown();
-                        alert('✅ MetaMask Connected Successfully!\n\nAddress: ' + walletAddress.substring(0, 10) + '...' + walletAddress.substring(32));
+                        alert('✅ MetaMask Connected!\n\nAddress: ' + walletAddress);
                     }
                 } catch (error) {
-                    throw new Error('User rejected the request or MetaMask error');
+                    alert('❌ Connection failed: ' + error.message);
                 }
             } else {
-                alert('❌ MetaMask Not Found\n\nPlease install MetaMask extension:\n• Go to metamask.io\n• Install browser extension\n• Create or import wallet\n• Refresh this page');
+                alert('❌ MetaMask not found!\n\nPlease install MetaMask extension.');
             }
         }
 
-        // WalletConnect
-        async function connectWalletConnect() {
-            alert('🔗 WalletConnect Integration\n\nThis would open QR code for:\n• OKX Wallet\n• Zerion\n• Trust Wallet\n• 1inch Wallet\n• And 300+ other wallets\n\n📱 Demo: Simulating connection...');
+        // Demo connection
+        function connectDemo() {
+            walletAddress = "0x7FbD935c9972b6A4c0b6F7c6f650996677bF6e0A";
+            isWalletConnected = true;
             
-            setTimeout(() => {
-                currentWalletType = 'WalletConnect';
-                walletAddress = "0x742d35Cc1e32f30a6b5D8b9F94B2F52f4c74f50E";
-                isWalletConnected = true;
-                
-                updateWalletUI();
-                document.getElementById('
+            document.getElementById('walletButton').innerHTML = 
+                `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
+            document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
+            document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+            document.getElementById('bridgeButton').disabled = false;
+            
+            alert('✅ Demo Wallet Connected!\n\nAddress: ' + walletAddress);
+        }
+
+        // Bridge button
+        document.getElementById('bridgeButton').addEventListener('click', function() {
+            if (isWalletConnected) {
+                alert('🌉 Bridge Preview\n\nThis would show bridge interface for:\n• OP Mainnet ↔ Base\n• Base ↔ Zora\n• Zora ↔ Mode\n\nDemo functionality working!');
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('walletDropdown');
+            const button = document.getElementById('walletButton');
+            
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

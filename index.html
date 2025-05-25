@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OP Stack Bridge - Cross-Superchain Bridge Dashboard</title>
+    <title>OP Stack Bridge - Testnet Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -19,39 +19,140 @@
             backdrop-filter: blur(15px);
             box-shadow: 0 8px 32px rgba(255, 4, 32, 0.1);
         }
-        .wallet-button { background: rgba(255, 4, 32, 0.1); border: 1px solid #ff0420; color: #ff0420; }
-        .wallet-button:hover { background: #ff0420; color: white; }
-        .connected { background: rgba(16, 185, 129, 0.1); border-color: #10b981; color: #10b981; }
+        .op-red { color: #ff0420; }
+        .op-gradient {
+            background: linear-gradient(45deg, #ff0420, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chain-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .op-sepolia { background: linear-gradient(45deg, #ff0420, #ff6b6b); }
+        .base-sepolia { background: linear-gradient(45deg, #0052ff, #4285f4); }
+        .zora-sepolia { background: linear-gradient(45deg, #000000, #333333); }
+        .mode-sepolia { background: linear-gradient(45deg, #dffe00, #b8cc00); color: #000; }
+        .bridge-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 4, 32, 0.1);
+            transition: all 0.3s ease;
+        }
+        .bridge-card:hover {
+            border-color: #ff0420;
+            box-shadow: 0 8px 25px rgba(255, 4, 32, 0.15);
+            transform: translateY(-2px);
+        }
+        .bridge-button {
+            background: linear-gradient(45deg, #ff0420, #ff6b6b);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .bridge-button:hover {
+            background: linear-gradient(45deg, #e6031c, #ff5252);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 4, 32, 0.3);
+        }
+        .bridge-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .token-input {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 4, 32, 0.2);
+            color: #1a1a1a;
+        }
+        .token-input:focus {
+            border-color: #ff0420;
+            box-shadow: 0 0 0 3px rgba(255, 4, 32, 0.1);
+        }
+        .wallet-button {
+            background: rgba(255, 4, 32, 0.1);
+            border: 1px solid #ff0420;
+            color: #ff0420;
+            transition: all 0.3s ease;
+        }
+        .wallet-button:hover {
+            background: #ff0420;
+            color: white;
+        }
+        .connected {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .testnet-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+        .faucet-button {
+            background: rgba(32, 201, 151, 0.1);
+            border: 1px solid #20c997;
+            color: #155724;
+            transition: all 0.3s ease;
+        }
+        .faucet-button:hover {
+            background: #20c997;
+            color: white;
+        }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
+    <!-- Testnet Warning Banner -->
+    <div class="testnet-warning text-center py-2">
+        <div class="flex items-center justify-center space-x-2">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="font-semibold">TESTNET MODE</span>
+            <span>•</span>
+            <span>Using test tokens only - No real funds at risk</span>
+        </div>
+    </div>
+
+    <!-- Header -->
     <div class="glass-card border-b">
         <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold" style="background: linear-gradient(45deg, #ff0420, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">OP Stack Bridge</h1>
-                <div class="relative">
-                    <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
-                        <i class="fas fa-wallet mr-2"></i>Connect Wallet
-                    </button>
-                    <div class="absolute top-12 right-0 bg-white rounded-lg shadow-lg border hidden z-50 min-w-48" id="walletDropdown">
-                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
-                            <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                                <i class="fas fa-m text-white text-xs"></i>
-                            </div>
-                            <div>
-                                <div class="font-medium">MetaMask</div>
-                                <div class="text-xs text-gray-500">Browser Extension</div>
-                            </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                        <i class="fas fa-bridge text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold op-gradient">OP Stack Bridge</h1>
+                        <p class="text-sm text-gray-600">Testnet Cross-Chain Bridge</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="wallet-button px-4 py-2 rounded-lg font-medium" id="walletButton">
+                            <i class="fas fa-wallet mr-2"></i>
+                            Connect Wallet
                         </button>
-                        <button class="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center space-x-3" data-wallet="demo">
-                            <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                                <i class="fas fa-play text-white text-xs"></i>
+                        <!-- Wallet Dropdown -->
+                        <div class="absolute top-12 right-0 bg-white rounded-lg shadow-lg border hidden z-50 min-w-48" id="walletDropdown">
+                            <div class="p-2 space-y-1">
+                                <button class="wallet-option w-full text-left px-3 py-2 rounded hover:bg-gray-100 flex items-center space-x-3" data-wallet="metamask">
+                                    <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-m text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">MetaMask</div>
+                                        <div class="text-xs text-gray-500">Browser Extension</div>
+                                    </div>
+                                </button>
                             </div>
-                            <div>
-                                <div class="font-medium">Demo Wallet</div>
-                                <div class="text-xs text-gray-500">Test Connection</div>
-                            </div>
-                        </button>
+                        </div>
+                    </div>
+                    <div class="text-orange-600 text-sm font-medium">
+                        <i class="fas fa-flask text-xs mr-1"></i>
+                        Testnet Mode
                     </div>
                 </div>
             </div>
@@ -59,48 +160,352 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-6 py-8">
-        <div class="glass-card rounded-xl p-6 text-center">
-            <h2 class="text-xl font-bold mb-4" style="color: #ff0420;">Cross-Superchain Bridge</h2>
-            <p>Connect your wallet to start bridging between OP Mainnet, Base, Zora, and Mode!</p>
-            <div class="mt-6">
-                <button class="px-6 py-3 rounded-lg font-medium" style="background: linear-gradient(45deg, #ff0420, #ff6b6b); color: white;" id="bridgeButton" disabled>
-                    Connect Wallet to Bridge
-                </button>
+        
+        <!-- Network Status & Faucets -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="font-medium">OP Sepolia</span>
+                    </div>
+                    <button class="faucet-button px-2 py-1 rounded text-xs" onclick="openFaucet('op')">
+                        <i class="fas fa-faucet mr-1"></i>Faucet
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600">Chain ID: 11155420</div>
+                <div class="text-xs text-gray-600">Gas: ~0.001 ETH</div>
             </div>
+            
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="font-medium">Base Sepolia</span>
+                    </div>
+                    <button class="faucet-button px-2 py-1 rounded text-xs" onclick="openFaucet('base')">
+                        <i class="fas fa-faucet mr-1"></i>Faucet
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600">Chain ID: 84532</div>
+                <div class="text-xs text-gray-600">Gas: ~0.001 ETH</div>
+            </div>
+            
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="font-medium">Zora Sepolia</span>
+                    </div>
+                    <button class="faucet-button px-2 py-1 rounded text-xs" onclick="openFaucet('zora')">
+                        <i class="fas fa-faucet mr-1"></i>Faucet
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600">Chain ID: 999999999</div>
+                <div class="text-xs text-gray-600">Gas: ~0.001 ETH</div>
+            </div>
+            
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <span class="font-medium">Mode Sepolia</span>
+                    </div>
+                    <button class="faucet-button px-2 py-1 rounded text-xs" onclick="openFaucet('mode')">
+                        <i class="fas fa-faucet mr-1"></i>Faucet
+                    </button>
+                </div>
+                <div class="text-xs text-gray-600">Chain ID: 919</div>
+                <div class="text-xs text-gray-600">Gas: ~0.001 ETH</div>
+            </div>
+        </div>
+
+        <!-- Bridge Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold op-red">Bridge Test Tokens</h2>
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-shield-alt text-green-500"></i>
+                            <span class="text-sm text-gray-600">Test Environment</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Network Display -->
+                    <div class="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-network-wired text-blue-600"></i>
+                                <span class="text-sm font-medium">Current Network:</span>
+                                <span class="text-sm" id="currentNetwork">Not Connected</span>
+                            </div>
+                            <button class="text-xs text-blue-600 hover:text-blue-800" id="switchNetworkBtn" style="display: none;">
+                                Switch Network
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- From Chain -->
+                    <div class="space-y-6">
+                        <div class="bridge-card rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">From</span>
+                                <span class="text-sm text-gray-500" id="fromBalance">Balance: --</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <select class="token-input rounded-lg px-3 py-2" id="fromChain">
+                                    <option value="op-sepolia">OP Sepolia</option>
+                                    <option value="base-sepolia">Base Sepolia</option>
+                                    <option value="zora-sepolia">Zora Sepolia</option>
+                                    <option value="mode-sepolia">Mode Sepolia</option>
+                                </select>
+                                <select class="token-input rounded-lg px-3 py-2" id="fromToken">
+                                    <option value="ETH">Test ETH</option>
+                                    <option value="USDC">Test USDC</option>
+                                    <option value="OP">Test OP</option>
+                                </select>
+                                <div class="relative">
+                                    <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="fromAmount">
+                                    <button class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500 text-sm hover:text-red-600 font-medium" id="maxButton">MAX</button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500" id="fromUsdValue">≈ $0.00 (Test)</span>
+                                <div class="chain-badge op-sepolia" id="fromChainBadge">
+                                    <i class="fas fa-circle text-xs"></i>
+                                    OP Sepolia
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Arrow -->
+                        <div class="flex justify-center">
+                            <button class="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-full flex items-center justify-center transition-all duration-300" id="swapChains">
+                                <i class="fas fa-arrow-down text-white text-lg"></i>
+                            </button>
+                        </div>
+
+                        <!-- To Chain -->
+                        <div class="bridge-card rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">To</span>
+                                <span class="text-sm text-gray-500" id="toBalance">Balance: --</span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <select class="token-input rounded-lg px-3 py-2" id="toChain">
+                                    <option value="base-sepolia">Base Sepolia</option>
+                                    <option value="op-sepolia">OP Sepolia</option>
+                                    <option value="zora-sepolia">Zora Sepolia</option>
+                                    <option value="mode-sepolia">Mode Sepolia</option>
+                                </select>
+                                <select class="token-input rounded-lg px-3 py-2" id="toToken">
+                                    <option value="ETH">Test ETH</option>
+                                    <option value="USDC">Test USDC</option>
+                                    <option value="OP">Test OP</option>
+                                </select>
+                                <input type="number" placeholder="0.0" class="token-input rounded-lg px-4 py-2 w-full" id="toAmount" readonly>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500" id="toUsdValue">≈ $0.00 (Test)</span>
+                                <div class="chain-badge base-sepolia" id="toChainBadge">
+                                    <i class="fas fa-circle text-xs"></i>
+                                    Base Sepolia
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Details -->
+                        <div class="bridge-card rounded-lg p-4" id="bridgeDetails" style="display: none;">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-medium text-gray-600">Test Bridge Details</span>
+                                <i class="fas fa-info-circle text-gray-400"></i>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Test Gas Fee:</span>
+                                    <span id="bridgeFee">~0.001 ETH</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Estimated Time:</span>
+                                    <span id="bridgeTime">~2 minutes</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">You'll receive:</span>
+                                    <span id="receiveAmount" class="font-medium">--</span>
+                                </div>
+                                <div class="text-xs text-orange-600 mt-2">
+                                    ⚠️ This is a test transaction using testnet tokens
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bridge Button -->
+                        <button class="bridge-button w-full py-4 rounded-lg font-semibold text-lg" id="bridgeButton" disabled>
+                            Connect Wallet to Test Bridge
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Tools & Info -->
+            <div class="space-y-6">
+                <!-- Wallet Info -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-wallet mr-2"></i>Wallet Info
+                    </h3>
+                    <div id="walletInfo">
+                        <div class="text-center text-gray-500 py-4">
+                            <i class="fas fa-wallet text-3xl mb-2 opacity-50"></i>
+                            <p class="text-sm">Connect wallet to see details</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Faucets -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-faucet mr-2"></i>Test Faucets
+                    </h3>
+                    <div class="space-y-3">
+                        <button class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors" onclick="openFaucet('sepolia')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">Sepolia ETH Faucet</div>
+                                    <div class="text-xs text-gray-500">Get test ETH for all testnets</div>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400"></i>
+                            </div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors" onclick="openFaucet('op')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">OP Sepolia Faucet</div>
+                                    <div class="text-xs text-gray-500">Get test OP tokens</div>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400"></i>
+                            </div>
+                        </button>
+                        
+                        <button class="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors" onclick="openFaucet('base')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">Base Sepolia Faucet</div>
+                                    <div class="text-xs text-gray-500">Get test ETH for Base</div>
+                                </div>
+                                <i class="fas fa-external-link-alt text-gray-400"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Test Instructions -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold op-red mb-4">
+                        <i class="fas fa-info-circle mr-2"></i>How to Test
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-start space-x-2">
+                            <span class="text-blue-600 font-bold">1.</span>
+                            <span>Connect your MetaMask wallet</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <span class="text-blue-600 font-bold">2.</span>
+                            <span>Get test ETH from faucets</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <span class="text-blue-600 font-bold">3.</span>
+                            <span>Switch to testnet networks</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <span class="text-blue-600 font-bold">4.</span>
+                            <span>Test cross-chain bridging</span>
+                        </div>
+                        <div class="flex items-start space-x-2">
+                            <span class="text-blue-600 font-bold">5.</span>
+                            <span>Verify transactions on explorers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center">
+            <div class="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-red-500/10 to-red-600/10 rounded-full border border-red-500/20">
+                <i class="fas fa-bridge op-red"></i>
+                <span class="text-sm font-medium op-gradient">Testnet OP Stack Bridge</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">Built for Testing Superchain Interoperability | serayd61</p>
         </div>
     </div>
 
     <script>
+        // Testnet network configurations
+        const TESTNET_CONFIGS = {
+            'op-sepolia': {
+                chainId: '0xaa37dc',
+                name: 'OP Sepolia',
+                rpcUrl: 'https://sepolia.optimism.io',
+                blockExplorer: 'https://sepolia-optimism.etherscan.io',
+                badge: 'op-sepolia'
+            },
+            'base-sepolia': {
+                chainId: '0x14a34',
+                name: 'Base Sepolia',
+                rpcUrl: 'https://sepolia.base.org',
+                blockExplorer: 'https://sepolia.basescan.org',
+                badge: 'base-sepolia'
+            },
+            'zora-sepolia': {
+                chainId: '0x3b9ac9ff',
+                name: 'Zora Sepolia',
+                rpcUrl: 'https://sepolia.rpc.zora.energy',
+                blockExplorer: 'https://sepolia.explorer.zora.energy',
+                badge: 'zora-sepolia'
+            },
+            'mode-sepolia': {
+                chainId: '0x397',
+                name: 'Mode Sepolia',
+                rpcUrl: 'https://sepolia.mode.network',
+                blockExplorer: 'https://sepolia.explorer.mode.network',
+                badge: 'mode-sepolia'
+            }
+        };
+
+        // Faucet URLs
+        const FAUCETS = {
+            'sepolia': 'https://sepoliafaucet.com',
+            'op': 'https://app.optimism.io/faucet',
+            'base': 'https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet',
+            'zora': 'https://testnet.bridge.zora.energy/',
+            'mode': 'https://docs.mode.network/tools/faucet'
+        };
+
+        // Wallet state
         let isWalletConnected = false;
         let walletAddress = "";
+        let currentChainId = "";
 
-        // Show wallet dropdown
+        // Connect wallet
         document.getElementById('walletButton').addEventListener('click', function() {
             if (!isWalletConnected) {
                 const dropdown = document.getElementById('walletDropdown');
                 dropdown.classList.toggle('hidden');
             } else {
-                // Disconnect
-                isWalletConnected = false;
-                walletAddress = "";
-                this.innerHTML = '<i class="fas fa-wallet mr-2"></i>Connect Wallet';
-                this.className = 'wallet-button px-4 py-2 rounded-lg font-medium';
-                document.getElementById('bridgeButton').textContent = 'Connect Wallet to Bridge';
-                document.getElementById('bridgeButton').disabled = true;
+                disconnectWallet();
             }
         });
 
-        // Wallet connection handlers
+        // Wallet option handlers
         document.querySelectorAll('[data-wallet]').forEach(button => {
             button.addEventListener('click', async function() {
                 const walletType = this.getAttribute('data-wallet');
-                
                 if (walletType === 'metamask') {
                     await connectMetaMask();
-                } else if (walletType === 'demo') {
-                    connectDemo();
                 }
-                
                 document.getElementById('walletDropdown').classList.add('hidden');
             });
         });
@@ -117,52 +522,47 @@
                         walletAddress = accounts[0];
                         isWalletConnected = true;
                         
+                        // Get current chain
+                        currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        
+                        updateWalletUI();
+                        await updateBalances();
+                        
+                        // Listen for network changes
+                        window.ethereum.on('chainChanged', handleChainChanged);
+                        window.ethereum.on('accountsChanged', handleAccountsChanged);
+                        
                         document.getElementById('walletButton').innerHTML = 
                             `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
                         document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
-                        document.getElementById('bridgeButton').textContent = 'Preview Bridge';
+                        document.getElementById('bridgeButton').textContent = 'Preview Test Bridge';
                         document.getElementById('bridgeButton').disabled = false;
                         
-                        alert('✅ MetaMask Connected!\n\nAddress: ' + walletAddress);
+                        alert('✅ MetaMask Connected!\n\n' +
+                              'Address: ' + walletAddress.substring(0, 10) + '...\n' +
+                              'Network: ' + getNetworkName(currentChainId) + '\n\n' +
+                              '💡 Get test tokens from faucets to start testing!');
                     }
                 } catch (error) {
                     alert('❌ Connection failed: ' + error.message);
                 }
             } else {
-                alert('❌ MetaMask not found!\n\nPlease install MetaMask extension.');
+                alert('❌ MetaMask not found!\n\nPlease install MetaMask:\n• Go to metamask.io\n• Install extension\n• Create wallet\n• Return here');
             }
         }
 
-        // Demo connection
-        function connectDemo() {
-            walletAddress = "0x7FbD935c9972b6A4c0b6F7c6f650996677bF6e0A";
-            isWalletConnected = true;
+        // Update wallet UI
+        function updateWalletUI() {
+            const networkName = getNetworkName(currentChainId);
+            document.getElementById('currentNetwork').textContent = networkName;
             
-            document.getElementById('walletButton').innerHTML = 
-                `<i class="fas fa-check mr-2"></i>${walletAddress.substring(0, 6)}...${walletAddress.substring(38)}`;
-            document.getElementById('walletButton').className = 'wallet-button connected px-4 py-2 rounded-lg font-medium';
-            document.getElementById('bridgeButton').textContent = 'Preview Bridge';
-            document.getElementById('bridgeButton').disabled = false;
-            
-            alert('✅ Demo Wallet Connected!\n\nAddress: ' + walletAddress);
-        }
-
-        // Bridge button
-        document.getElementById('bridgeButton').addEventListener('click', function() {
-            if (isWalletConnected) {
-                alert('🌉 Bridge Preview\n\nThis would show bridge interface for:\n• OP Mainnet ↔ Base\n• Base ↔ Zora\n• Zora ↔ Mode\n\nDemo functionality working!');
+            // Show network switch button if not on testnet
+            const switchBtn = document.getElementById('switchNetworkBtn');
+            if (!isTestnetChain(currentChainId)) {
+                switchBtn.style.display = 'block';
+                switchBtn.onclick = () => switchToNetwork('op-sepolia');
+            } else {
+                switchBtn.style.display = 'none';
             }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('walletDropdown');
-            const button = document.getElementById('walletButton');
             
-            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
-                dropdown.classList.add('hidden');
-            }
-        });
-    </script>
-</body>
-</html>
+            // Update wallet info
